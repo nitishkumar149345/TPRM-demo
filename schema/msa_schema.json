@@ -1,0 +1,20 @@
+{
+    "First Call Resolution (FCR)": "Percentage of customer issues resolved during the first contact.",
+    "Average Handle Time (AHT)": "Average duration of each customer interaction.",
+    "Customer Satisfaction (CSAT)": "Customer rating based on feedback surveys.",
+    "Net Promoter Score (NPS)": "Customer willingness to recommend based on service experience.",
+    "Abandon Rate": "Percentage of calls abandoned by customers before connecting with an agent.",
+    "Complaint Resolution Rate": "Percentage of complaints resolved within established SLAs.",
+
+    "PII Handling Compliance": "Compliance with procedures for managing personally identifiable information securely.",
+    "Data Access Controls": "Compliance with secure access and handling protocols for PII.",
+    "Data Breach Incidents": "Number of confirmed data breaches involving PII.",
+    "Staff Training Completion": "Percentage of staff completing mandatory privacy and security training.",
+    "Secure Data Access": "Compliance with secure access protocols (authentication, authorization).",
+
+    "Regulatory Compliance Audits": "Successful completion and passing of regulatory compliance audits.",
+    "Regulatory Complaint Responses": "Timeliness in responding to regulatory complaints.",
+    "Call Recording Compliance": "Compliance with regulations around call recordings, notifications, and consents."
+}
+
+  
