@@ -1,10 +1,15 @@
 import boto3
 import logging
-
+from constants import keys
 
 #Defining S3 client
 
-s3_client = boto3.client('s3')
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id=keys.AWS_S3_ACCESS_KEY,
+    aws_secret_access_key=keys.AWS_S3_SECRET_KEY
+)
+
 
 
 class FileNotFoundError(Exception):
