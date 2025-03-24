@@ -1,11 +1,15 @@
 import json
-import langgraph
-from langgraph.graph import StateGraph
-from typing import Dict, Any
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from langchain.schema import SystemMessage, HumanMessage
+from typing import Any, Dict
+
 from dotenv import load_dotenv
+# from langchain.chat_models import ChatOpenAI
+# from langchain.prompts import PromptTemplate
+from langchain.schema import HumanMessage, SystemMessage
+from langgraph.graph import StateGraph
+
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import PromptTemplate
+
 
 load_dotenv()
 # Sample Input JSON (Replace with actual JSON input)
