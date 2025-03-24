@@ -1,30 +1,28 @@
 import boto3
 import logging
 
-from constants.keys import (
-    AWS_S3_ACCESS_KEY,
-    AWS_S3_SECRET_KEY, 
-    AWS_S3_BUCKET_NAME,
-)
 
 #Defining S3 client
 
 s3_client = boto3.client('s3')
 
 
+class FileNotFoundError(Exception):
+    pass
+
 def download_file_content(bucket_name, object_name, output_file_path):
 
     try:
 
-        data = s3_client.get_object(bucket_name, object_name, output_file_path)
-        # logging.info(f'File content: {data}')
+        s3_client.download_file(bucket_name, object_name, output_file_path)
+        logging.info(f'{object_name} downloaded from s3')
         # contents = data['Body'].read()
         # return contents.decode("utf-8")
         return output_file_path
 
     except Exception as e:
         logging.info(f'Exception while downloading content: {str(e)}')
-        return None
+        raise FileNotFoundError
 
 def upload_file_content(bucket_name, object_name, file_content):
 

@@ -9,6 +9,11 @@ class ConditionType(str, Enum):
     NOT_EQUAL = "!="
     NOT_APPLIED = None
 
+class Remark(str, Enum):
+    CONSTANT = 'constant'
+    INCREASING = 'increasing'
+    DECREASING = 'descreasing'
+
 
 class MetricValue(BaseModel):
 
@@ -42,3 +47,13 @@ class Metrics(BaseModel):
     regulatory_compliance_audits: Metric = Field(..., alias="Regulatory Compliance Audits")
     regulatory_complaint_responses: Metric = Field(..., alias="Regulatory Complaint Responses")
     call_recording_compliance: Metric = Field(..., alias="Call Recording Compliance")
+
+
+
+class ComparisonModel(BaseModel):
+
+    target_value: MetricValue = Field(..., description="Target metric value, including min/max thresholds or numerical limits")
+    actual_value: MetricValue = Field(..., description="Actual metric value, including min/max thresholds or numerical limits")
+    condition: ConditionType = Field(..., description="Condition to follow by the metric")
+    is_valid: bool = Field(..., description="Indicates whether the actual metric meets the target metric (True if valid, False otherwise)")
+    remark: Remark = Field(..., description='Based on the target, actual and condition, define remark, constant if both are equal, increasing if actual meetingor exceeding target, decreasing if actual is not meeting target')

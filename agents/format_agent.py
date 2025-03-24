@@ -23,14 +23,21 @@ class MetricExtractor:
 
     def _setup_chain(self) -> Any:
         """Set up the processing chain with prompt template and parser."""
+
         base_prompt = """
+
         Role: Act as an Senior Compliance Officer, experienced in analyzing service level aggrement contracts and formulating various sla metrics.
+
         Task: Your task is to understand, analyze and identify various SLA Performance metrics from the given SLA contract document.
+        
         Guidelines: To perform the specified task, follow these steps:
             - Read and understand the sla metrics from the contract document.
             - Identify and classify performance metrics like uptime, response time, resolutuion_time, throughput, latency, capacity, error rate, mean_time_between_failures, and mean_time_to_repair from mentiones sla metrics in contract.
+        
         Input: You will receive the contract as complete text: {context}
+        
         Output: Respond with identified SLA Performance Metrics in specified format.
+        
         \n\n
         format_instructions: {format_instructions}
         """
@@ -43,6 +50,7 @@ class MetricExtractor:
 
     def process_metrics(self) -> Dict[str, Any]:
         """Process all metrics from the document and return results."""
+        
         logger.info("Starting metrics processing")
 
         try:
@@ -67,11 +75,12 @@ class MetricExtractor:
                         }
                     )
 
-                    final_metrics[metric] = {'result':response, 'source':metadata[metric]}
-                  
+                    final_metrics[metric] = {
+                        "result": response,
+                    }  #'source':metadata[metric]}
 
                     logger.info(f"Successfully processed metric: {metric}")
-                
+
                 except Exception as e:
                     logger.error(f"Error processing metric {metric}: {str(e)}")
                     raise Exception
