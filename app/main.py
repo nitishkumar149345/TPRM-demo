@@ -5,6 +5,7 @@ import httpx
 from agents.format_agent import MetricExtractor
 from agents.analyze_agent import AnalyzeMetrics
 from fastapi import FastAPI, Form, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
 from fastapi.responses import Response  # ,StreamingResponse, RedirectResponse
 from utility import utils
@@ -14,6 +15,16 @@ from constants import keys
 
 app = FastAPI()
 upload_files_dir = os.path.join(pathlib.Path(__file__).parent.parent, "contracts")
+
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins for development
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health_check")
