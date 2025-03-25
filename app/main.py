@@ -10,7 +10,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import Response  # ,StreamingResponse, RedirectResponse
 from utility import utils
 from constants import keys
-
+from logger_config.logs import logger
 # from .websocket_manager import WebSocketManager
 
 app = FastAPI()
@@ -26,12 +26,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+logger.info('Application started...')
 
 @app.get("/health_check")
-def health_check(
-    request,
-):
-    return Response({"message": "working", "status": status.HTTP_200_OK})
+def health_check():
+    return {"message": "working", "status": status.HTTP_200_OK}
 
 
 
@@ -41,7 +40,7 @@ async def extract(contract_url:str = Form(...), contract_id: str = Form(...)):
 
     file_name = contract_url.split('/')[-1]
     local_file_path = os.path.join(upload_files_dir, file_name)
-    local_contract_path = utils.download_file_content(bucket_name= keys.AWS_S3_BUCKET_NAME, 
+    local_contract_path = utils.download_file_content(bucket_name= keys.AWS_BUCKET_NAME, 
                                                       object_name= contract_url,
                                                       output_file_path= local_file_path)
     
