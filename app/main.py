@@ -46,7 +46,7 @@ async def extract(contract_url:str = Form(...), contract_id: str = Form(...)):
     
     # print (local_contract_path)
 
-    url = {keys.BASE_APPLICATION_URL} + f"contracts/{contract_id}"
+    url = F'{keys.BASE_APPLICATION_URL}' + f"contracts/{contract_id}"
     extractor = MetricExtractor(file_path= local_contract_path)
     results = extractor.process_metrics()
   
