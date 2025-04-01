@@ -15,7 +15,7 @@ from pymilvus.orm.types import infer_dtype_bydata
 from vector_store.base_vectorstore import BaseVector
 from vector_store.fields import Field
 from vector_store.models import Document, MilvusConfig
-
+from logger_config.logs import logger
 # from base_vectorstore import BaseVector
 # from .fields import Field
 # from .models import Document, MilvusConfig
@@ -50,7 +50,11 @@ class MilvusVector(BaseVector):
         """
         Initialize and return a Milvus client.
         """
-        client = MilvusClient(uri=config.uri)
+        try:
+            client = MilvusClient(uri=config.uri)
+        except MilvusException as e:
+            logger.error(str(e))
+            
         return client
 
     def create(self, texts: list[Document], embeddings: list[list[float]]):

@@ -22,19 +22,21 @@ MILVUS_HOST_URI= os.getenv("MILVUS_HOST_uri", None)
 
 
 if not OPENAI_API_KEY:
-    logger.info('Pass OPENAI_API_KEY or Set it as env variable')
+    logger.critical('Pass OPENAI_API_KEY or Set it as env variable')
 
 if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
-    logger.info('Provide aws s3 access key or secret key')
+    logger.critical('Provide aws s3 access key or secret key')
 
 
 if not AWS_BUCKET_NAME:
-    logger.info('Provide aws s3 bucket name')
+    logger.critical('Provide aws s3 bucket name')
 
 if not BASE_APPLICATION_URL:
     # raise KeyNotFoundError
-    logger.info('Provide base url')
+    logger.critical('Provide base url')
 
-if not MILVUS_HOST_URI:
+
+
+if not MILVUS_HOST_URI or not MILVUS_HOST_URI.startswith('http'):
     # raise KeyNotFoundError
-    logger.info('Provide Milvus VDB url')
+    logger.critical('Milvus uri not provided or format wrong')
