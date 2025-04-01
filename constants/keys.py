@@ -36,4 +36,5 @@ if not BASE_APPLICATION_URL:
     logger.info('Provide base url')
 
 if not MILVUS_HOST_URI:
-    raise KeyNotFoundError
+    # raise KeyNotFoundError
+    logger.info('Provide Milvus VDB url')
