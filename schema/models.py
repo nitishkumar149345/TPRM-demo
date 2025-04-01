@@ -9,6 +9,7 @@ class ConditionType(str, Enum):
     NOT_EQUAL = "!="
     NOT_APPLIED = None
 
+
 class Remark(str, Enum):
     CONSTANT = 'constant'
     INCREASING = 'increasing'
@@ -57,3 +58,4 @@ class ComparisonModel(BaseModel):
     condition: ConditionType = Field(..., description="Condition to follow by the metric")
     is_valid: bool = Field(..., description="Indicates whether the actual metric meets the target metric (True if valid, False otherwise)")
     remark: Remark = Field(..., description='Based on the target, actual and condition, define remark, constant if both are equal, increasing if actual meetingor exceeding target, decreasing if actual is not meeting target')
+    reason: str = Field(..., description="One line explaination for metric failure, None if metrics meet target.")
