@@ -93,6 +93,7 @@ class AnalyzeMetrics:
         logger.info(f"Completed analysis of {len(results)} metrics")
         return results
 
+
 # Example usage and test data
 if __name__ == '__main__':
     target_metrics = {}
