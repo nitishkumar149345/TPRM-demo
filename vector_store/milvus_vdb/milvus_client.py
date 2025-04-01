@@ -51,11 +51,14 @@ class MilvusVector(BaseVector):
         Initialize and return a Milvus client.
         """
         try:
+            print (config.uri)
             client = MilvusClient(uri=config.uri)
-        except MilvusException as e:
-            logger.error(str(e))
-            
-        return client
+
+            return client
+        except MilvusException :
+            raise MilvusException
+
+      
 
     def create(self, texts: list[Document], embeddings: list[list[float]]):
         """

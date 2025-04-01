@@ -16,7 +16,7 @@ AWS_ACCESS_KEY_ID= os.getenv('AWS_ACCESS_KEY_ID', None)
 AWS_SECRET_ACCESS_KEY= os.getenv('AWS_SECRET_ACCESS_KEY', None)
 AWS_BUCKET_NAME= os.getenv('AWS_BUCKET_NAME', None)
 BASE_APPLICATION_URL= os.getenv('BASE_URL',None)
-MILVUS_HOST_URI= os.getenv("MILVUS_HOST_uri", None)
+MILVUS_HOST_URI= os.getenv("MILVUS_HOST_URI", None)
 # MILVUS_PORT= os.getenv("MILVUS_PORT", None)
 
 
