@@ -20,10 +20,12 @@ if not os.path.exists(fields_path):
 
 
 class MetricExtractor:
+
+    _llm_model = ChatOpenAI(openai_api_key=keys.OPENAI_API_KEY)
+
     def __init__(self, document_id: str, collection_id: str):
         self.document_id = document_id
         self.collection_id = collection_id
-        self._llm_model = ChatOpenAI(openai_api_key=keys.OPENAI_API_KEY)
         self._output_parser = JsonOutputParser(pydantic_object=Metric)
 
     @staticmethod
@@ -94,7 +96,7 @@ class MetricExtractor:
         prompt = ChatPromptTemplate.from_messages(
             [("system", base_prompt), ("user", "{input}")]
         )
-        return prompt | self._llm_model | self._output_parser
+        return prompt | MetricExtractor._llm_model | self._output_parser
 
     def process_metrics(self) -> Dict[str, Any]:
         """Process all metrics from the document and return results."""

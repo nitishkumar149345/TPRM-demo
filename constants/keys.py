@@ -6,9 +6,12 @@ load_dotenv()
 
 
 class KeyNotFoundError(Exception):
+    def __init__(self, key_name):
+        self.key_name = key_name
 
-    def __str__(self,):
-        return 'URL not found, set it as env variable'
+    def __str__(self):
+        return f"Environment variable '{self.key_name}' not found. Please set it in your environment."
+
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', None)
 
@@ -32,11 +35,11 @@ if not AWS_BUCKET_NAME:
     logger.critical('Provide aws s3 bucket name')
 
 if not BASE_APPLICATION_URL:
-    # raise KeyNotFoundError
+    # raise KeyNotFoundError('base_application_url')
     logger.critical('Provide base url')
 
 
 
 if not MILVUS_HOST_URI or not MILVUS_HOST_URI.startswith('http'):
-    # raise KeyNotFoundError
+    # raise KeyNotFoundError('milvus uri')
     logger.critical('Milvus uri not provided or format wrong')

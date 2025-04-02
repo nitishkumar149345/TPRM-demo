@@ -21,7 +21,8 @@ def _get_client():
 
 
 class FileNotFoundError(Exception):
-    pass
+    def __str__(self):
+        return super().__str__()
 
 def download_file_content(bucket_name, object_name, output_file_path):
 
