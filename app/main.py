@@ -1,6 +1,5 @@
 import os
 import pathlib
-import json
 
 import httpx
 # from agents.analyze_agent import AnalyzeMetrics
@@ -12,9 +11,9 @@ from typing import Literal
 from agents.preprocess import PreprocessDocument
 from constants import keys
 from fastapi import FastAPI, Form, status
-from fastapi.exceptions import HTTPException
+# from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response, JSONResponse
+from fastapi.responses import Response
 from fastapi.encoders import jsonable_encoder
 
 from logger_config.logs import logger
@@ -47,9 +46,7 @@ async def process_document(
     document_id: str = Form(...),
     vendor_id: str = Form(...),
 ):
-    file_name = document_url.split("/")[-1]
-    object_key = document_url.split("/")
-    object_key = object_key[-2] + "/" + object_key[-1]
+    file_name, object_key = utils.parse_s3_url(document_url)
     print (object_key)
 
     local_file_path = os.path.join(upload_files_dir, file_name)
@@ -73,36 +70,6 @@ async def process_document(
 
 
 
-async def post_data(sub_url:str, data, method:Literal['POST','PUT']):
-    '''function to send data to endpoint'''
-
-    api_endpoint_url = f"{keys.BASE_APPLICATION_URL}" + sub_url
-
-    async with httpx.AsyncClient() as client:
-        try:
-            if method == "POST":
-                response = await client.post(
-                    api_endpoint_url,
-                    json= data,
-                    headers={"content-Type": "application/json"}
-                )
-
-            else:
-                print ('put..........')
-                response = await client.put(
-                    api_endpoint_url,
-                    json= data,
-                    headers= {"content-Type": "application/json"}
-                )
-            
-            return response
-        
-        except Exception as e:
-            # raise HTTPException(detail=str(e), status_code=status.HTTP_400_BAD_REQUEST)
-            print (str(e))
-
-
-
 @app.post("/extract_target_metrics")
 async def extract_target_metrics(document_id: str = Form(...), vendor_id: str = Form(...)):
 
@@ -121,26 +88,36 @@ async def extract_target_metrics(document_id: str = Form(...), vendor_id: str = 
     headers = {'Content-Type': 'application/json'}  # Important for JSON data
     response = requests.put(sub_url, json= data, headers=headers)
     print (response)
-    try:
-        downstream_response = response.json()
-    except Exception:
-        downstream_response = response.text  # fallback if not JSON
-
+    
     return Response(content= response.content, status_code= status.HTTP_200_OK)
 
 
+def is_schema_output(response):
+    return (
+        isinstance(response, dict)
+        and 'properties' in response
+        and '$defs' in response
+        and 'actual_metric' in response
+        and 'target_metric' in response
+    )
 
 @app.post("/analyze_metric")
 async def analyze_metrics(
     target_metrics: dict,
     actual_metrics: dict,
-    # vendor: dict,
-    # contract: dict,
-    # contract_metric: dict,
+    vendor: dict,
+    contract: dict,
+    contract_metric: dict,
 ):
+    
+
+    vendor_id = vendor['vendor_id']
+    contract_id = contract['contract_id']
+    actual_metric_id = contract_metric['actual_metric_id']
+
     results = {}
     for metric in target_metrics.keys():
-        target_metric = target_metrics[metric]['result']
+        target_metric = target_metrics[metric]
         actual_metric = actual_metrics[metric]
 
         max_value = target_metric['metric_value']['max_value']
@@ -158,26 +135,43 @@ async def analyze_metrics(
         "actual_metric": actual_value,
         "target_metric": target_value,
         "condition": condition,
-    }
+        }
         result = agent.invoke(inputs)
-        results[metric] = result
 
-    
+        # print (result)
+        # print (type(result) ,result.get('properties'))
 
-        
-    
-    # url = keys.BASE_APPLICATION_URL + "risk/"
-    # async with httpx.AsyncClient() as client:
-    #     try:
-    #         aws_response = await client.post(
-    #             url, json=data, headers={"content-Type": "application/json"}
-    #         )
+        if 'properties' in result.keys():
+            print (f'Got invalid output, reinvoking metric:{metric}')
+            result = agent.invoke(inputs)
 
-    #     except Exception as e:
-    #         raise HTTPException(detail=str(e), status_code=status.HTTP_400_BAD_REQUEST)
+        results[metric] = result['result_obj']
+        results[metric]['actual_metric'] = actual_metric
+        results[metric]['target_metric'] = target_metric['metric_value']
+        results[metric]['condition'] = condition
 
-    # return Response(content=aws_response.content, status_code=aws_response.status_code)
-    return results
+
+    # print (results)
+    url = keys.BASE_APPLICATION_URL + 'risk/'
+    results = jsonable_encoder(results)
+
+    data = {
+        "vendor_id": vendor_id,
+        "contract_id": contract_id,
+        "contract_metric_id": actual_metric_id,
+        "risk_comparison": results
+    }
+
+    try:
+        response = requests.post(
+            url,
+            json= data,
+            headers= {'Content-Type': 'application/json'}
+        )
+    except Exception:
+        raise Exception
+
+    return Response(content= response.content, status_code= status.HTTP_200_OK)
 
 
 
