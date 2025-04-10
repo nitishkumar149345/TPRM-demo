@@ -95,7 +95,7 @@ def parse_s3_url(url:str)->tuple:
     keys = url.split('/')
     file_name = keys[-1]
 
-    object_key = keys[-2] + "/" + keys[-1]
+    object_key = keys[-3] + "/" + keys[-2] + "/" + keys[-1]
 
     return file_name, object_key
 
