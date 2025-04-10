@@ -14,11 +14,41 @@ from pymilvus.milvus_client import IndexParams
 from pymilvus.orm.types import infer_dtype_bydata
 from vector_store.base_vectorstore import BaseVector
 from vector_store.fields import Field
-from vector_store.models import Document, MilvusConfig
+from vector_store.models import Document
 from logger_config.logs import logger
+from pydantic import BaseModel, model_validator
+
 # from base_vectorstore import BaseVector
 # from .fields import Field
 # from .models import Document, MilvusConfig
+
+class MilvusConfig(BaseModel):
+    """
+    configuration class for Milvus connection
+    """
+
+    uri: str # Milvus server uri
+    token: Optional[str] = None # Optional token for aithentication
+    user: Optional[str]
+    password: Optional[str]
+    
+    @model_validator(mode="before")
+    @classmethod
+    def validate_config(cls, values:dict) -> dict:
+        """
+        Validate the configuration values.
+        Raises ValueError if required fields are missing.
+        """
+        if not values.get("uri"):
+            raise ValueError("config MILVUS_URI is required")
+        
+
+    def to_milvus_params(self,):
+        """
+        convert the cinfiguration to dictionary of Milvus connection parameters"""
+        return {
+            "uri":self.uri
+        }
 
 
 class MilvusVector(BaseVector):
@@ -51,7 +81,7 @@ class MilvusVector(BaseVector):
         Initialize and return a Milvus client.
         """
         try:
-            print (config.uri)
+            # print (config.uri)
             client = MilvusClient(uri=config.uri)
 
             return client
@@ -183,6 +213,7 @@ class MilvusVector(BaseVector):
         Search for documents by vector similarity.
         """
 
+        
         results = self._client.search(
             collection_name=self._collection_name,
             data=[query_vector],
@@ -208,7 +239,7 @@ class MilvusVector(BaseVector):
             collection_name=self._collection_name,
             data=[query],
             anns_field=Field.SPARSE_VECTOR.value,
-            limit=4,
+            limit=3,
             output_fields=[Field.CONTENT_KEY.value, Field.METADATA_KEY.value],
             filter=f'metadata["document_id"] in ({document_ids})',
         )

@@ -21,7 +21,7 @@ AWS_BUCKET_NAME= os.getenv('AWS_BUCKET_NAME', None)
 BASE_APPLICATION_URL= os.getenv('BASE_URL',None)
 MILVUS_HOST_URI= os.getenv("MILVUS_HOST_URI", None)
 # MILVUS_PORT= os.getenv("MILVUS_PORT", None)
-
+GOOGLE_API_KEY= os.getenv("GOOGLE_API_KEY", None)
 
 
 if not OPENAI_API_KEY:

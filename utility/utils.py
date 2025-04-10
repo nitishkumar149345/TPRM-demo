@@ -18,8 +18,6 @@ def _get_client():
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= str(e))
 
 
-
-
 class FileNotFoundError(Exception):
     def __str__(self):
         return super().__str__()
@@ -89,3 +87,19 @@ def move_file(source_bucket_name, source_key, destination_bucket_name, destinati
         return None
 
     return delete_file(source_bucket_name, source_key)
+
+
+
+def parse_s3_url(url:str)->tuple:
+
+    keys = url.split('/')
+    file_name = keys[-1]
+
+    object_key = keys[-2] + "/" + keys[-1]
+
+    return file_name, object_key
+
+
+def serialize_uuid(uuid: str):
+
+    return '_'+ uuid.replace('-','_')

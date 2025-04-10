@@ -1,20 +1,34 @@
 {
-    "First Call Resolution (FCR)": "Percentage of customer issues resolved during the first contact.",
-    "Average Handle Time (AHT)": "Average duration of each customer interaction.",
-    "Customer Satisfaction (CSAT)": "Customer rating based on feedback surveys.",
-    "Net Promoter Score (NPS)": "Customer willingness to recommend based on service experience.",
-    "Abandon Rate": "Percentage of calls abandoned by customers before connecting with an agent.",
-    "Complaint Resolution Rate": "Percentage of complaints resolved within established SLAs.",
-
-    "PII Handling Compliance": "Compliance with procedures for managing personally identifiable information securely.",
-    "Data Access Controls": "Compliance with secure access and handling protocols for PII.",
-    "Data Breach Incidents": "Number of confirmed data breaches involving PII.",
-    "Staff Training Completion": "Percentage of staff completing mandatory privacy and security training.",
-    "Secure Data Access": "Compliance with secure access protocols (authentication, authorization).",
-
-    "Regulatory Compliance Audits": "Successful completion and passing of regulatory compliance audits.",
-    "Regulatory Complaint Responses": "Timeliness in responding to regulatory complaints.",
-    "Call Recording Compliance": "Compliance with regulations around call recordings, notifications, and consents."
-}
-
-  
+        "base_fields": {
+            "contract_name": "Name of the contract or agreement document.",
+            "contract_type": "Type or category of the contract (e.g., SLA, MSA, NDA).",
+            "vendor_name": "Name of the vendor or service provider involved in the contract.",
+            "customer_name": "Name of the customer or client involved in the contract.",
+            "effective_date": "Date when the contract becomes legally effective.",
+            "expiration_date": "Date when the contract is set to expire.",
+            "renewal_terms": "Conditions under which the contract may be renewed or extended."
+            
+        },
+        "metrics":{
+            "first_call_resolution(FCR)": "Percentage of customer issues resolved during the first contact.",
+            "average_handel_time(AHT)": "Average duration of each customer interaction.",
+            "customer_satisfaction(CSAT)": "Customer rating based on feedback surveys.",
+            "net_promoter_score(NPS)": "Customer willingness to recommend based on service experience.",
+            "abandon_rate": "Percentage of calls abandoned by customers before connecting with an agent.",
+            "complaint_resolution_rate": "Percentage of complaints resolved within established SLAs.",
+        
+            "pii_handling_compliance": "Compliance with procedures for managing personally identifiable information securely.",
+            "data_access_controls": "Compliance with secure access and handling protocols for PII.",
+            "data_breach_incidents": "Number of confirmed data breaches involving PII.",
+            "staff_training_completion": "Percentage of staff completing mandatory privacy and security training.",
+            "secure_data_access": "Compliance with secure access protocols (authentication, authorization).",
+        
+            "regulatory_compliance_audits": "Successful completion and passing of regulatory compliance audits.",
+            "regulatory_complaint_responses": "Timeliness in responding to regulatory complaints.",
+            "call_recording _compliance": "Compliance with regulations around call recordings, notifications, and consents."
+        }
+    }
+    
+    
+    
+      
