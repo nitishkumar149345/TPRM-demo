@@ -1,6 +1,6 @@
 import os
 import pathlib
-
+from io import BytesIO
 import httpx
 # from agents.analyze_agent import AnalyzeMetrics
 from agents.analyzer2 import agent
@@ -10,7 +10,7 @@ from typing import Literal
 # from agents.format_agent import MetricExtractor
 from agents.preprocess import PreprocessDocument
 from constants import keys
-from fastapi import FastAPI, Form, status
+from fastapi import FastAPI, Form, status, File, UploadFile
 # from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
@@ -104,28 +104,37 @@ def is_schema_output(response):
 
 
 @app.post("/process_actual_metrics")
-def process_actual_metrics(file_url:str = Form(...)):
+async def process_actual_metrics(file:UploadFile = File(...)):
 
 
-    dataframe = pd.read_excel(file_url)
-    
+    # file_object = file.filename
+    data = await file.read()
+    dataframe = pd.read_excel(BytesIO(data), engine="openpyxl")
+    # print(dataframe)
+
+    vendor_id = dataframe.iloc[1,1]
+    contract_id = dataframe.iloc[2,1]
+    dataframe.fillna(0, inplace=True)
+
     actual_metric_data = {
-        row['metric'] : {"value":row['value'], "data_type":row['data_type']}  
-        for _, row in dataframe.iterrows()
+        row[0]: {"value": row[1], "data_type": row[2]} 
+        for index, row in dataframe.iterrows() if index >=6 
     }
 
     payload = {
-        "vendor_id": '',
-        "contract_id": '',
+        "vendor_id": vendor_id,
+        "contract_id": contract_id,
         "frequency": 'monthly',
         "actual_metric": actual_metric_data
     }
+    
 
     sub_url = keys.BASE_APPLICATION_URL + '/metrics/'
     headers = {'Content-Type': 'application/json'}  
     response = requests.post(sub_url, json= payload, headers=headers)
 
     return Response(content= response.content, status_code= status.HTTP_200_OK) 
+    # return payload
 
 
 @app.post("/analyze_metric")
