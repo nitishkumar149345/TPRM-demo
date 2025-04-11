@@ -18,7 +18,7 @@ from fastapi.encoders import jsonable_encoder
 
 from logger_config.logs import logger
 from utility import utils
-
+import pandas as pd
 
 app = FastAPI()
 upload_files_dir = os.path.join(pathlib.Path(__file__).parent.parent, "contracts")
@@ -100,6 +100,33 @@ def is_schema_output(response):
         and 'actual_metric' in response
         and 'target_metric' in response
     )
+
+
+
+@app.post("/process_actual_metrics")
+def process_actual_metrics(file_url:str = Form(...)):
+
+
+    dataframe = pd.read_excel(file_url)
+    
+    actual_metric_data = {
+        row['metric'] : {"value":row['value'], "data_type":row['data_type']}  
+        for _, row in dataframe.iterrows()
+    }
+
+    payload = {
+        "vendor_id": '',
+        "contract_id": '',
+        "frequency": 'monthly',
+        "actual_metric": actual_metric_data
+    }
+
+    sub_url = keys.BASE_APPLICATION_URL + '/metrics/'
+    headers = {'Content-Type': 'application/json'}  
+    response = requests.post(sub_url, json= payload, headers=headers)
+
+    return Response(content= response.content, status_code= status.HTTP_200_OK) 
+
 
 @app.post("/analyze_metric")
 async def analyze_metrics(
