@@ -8,6 +8,7 @@ from langchain_openai import  ChatOpenAI
 
 from constants import keys
 from schema.models import MetricComparisonResult
+from logger_config.logs import logger
 
 
 llm_model = ChatOpenAI(openai_api_key= keys.OPENAI_API_KEY)
@@ -25,8 +26,9 @@ class AgentState(TypedDict):
 
 
 def compare(state: AgentState):
-
-    base_prompt = '''
+    try:
+        logger.info("Starting metric comparison analysis")
+        base_prompt = '''
 
         You are an analytical expert.
 
@@ -54,30 +56,38 @@ def compare(state: AgentState):
 
         '''
     
-    prompt = ChatPromptTemplate.from_messages([
-        ('system', base_prompt),
-        ('user','{input}')
-    ])
+        prompt = ChatPromptTemplate.from_messages([
+            ('system', base_prompt),
+            ('user','{input}')
+        ])
 
-    chain = prompt | llm_model 
+        chain = prompt | llm_model 
 
-    actual_metric = state['actual_metric']
-    target_metric = state['target_metric']
-    condition = state['condition']
+        actual_metric = state['actual_metric']
+        target_metric = state['target_metric']
+        condition = state['condition']
 
-    input_query = f"Analyze the actual metric value: {actual_metric} against the target metric value: {target_metric}, and determine whether the condition '{condition}' is satisfied or not."
+        logger.info(f"Comparing metrics - Actual: {actual_metric}, Target: {target_metric}, Condition: {condition}")
+        
+        input_query = f"Analyze the actual metric value: {actual_metric} against the target metric value: {target_metric}, and determine whether the condition '{condition}' is satisfied or not."
 
-    print ('analyzing metrics........')
-    result = chain.invoke({"input": input_query})
-    # print (result)
-    return {"result": result.content}
+        logger.debug("Invoking LLM for metric comparison")
+        result = chain.invoke({"input": input_query})
+        logger.info("Metric comparison completed successfully")
+        
+        return {"result": result.content}
+        
+    except Exception as e:
+        logger.error(f"Error in metric comparison: {str(e)}")
+        raise
 
 
 def formatter(state: AgentState):
+    try:
+        logger.info("Starting result formatting")
+        result = state['result']
 
-    result = state['result']
-
-    base_prompt = '''
+        base_prompt = '''
 
         You are an excellent writing formatter, skilled in converting plain text into insightful and structured JSON objects.
 
@@ -95,17 +105,24 @@ def formatter(state: AgentState):
         '''
     
 
-    prompt = ChatPromptTemplate.from_messages([
-        ('system', base_prompt),
-        ('user','{input}')
-    ])
+        prompt = ChatPromptTemplate.from_messages([
+            ('system', base_prompt),
+            ('user','{input}')
+        ])
 
-    output_parser = JsonOutputParser(pydantic_object= MetricComparisonResult)
-    chain = prompt | llm_model | output_parser
+        output_parser = JsonOutputParser(pydantic_object= MetricComparisonResult)
+        chain = prompt | llm_model | output_parser
 
-    input_query = f'format this comparsion data:{result}, \n\n from text into valied json data'
-    response = chain.invoke({"input":input_query, "format_instructions": output_parser.get_format_instructions()})
-    return {"result_obj": response}
+        logger.debug("Formatting comparison result into JSON")
+        input_query = f'format this comparsion data:{result}, \n\n from text into valied json data'
+        response = chain.invoke({"input":input_query, "format_instructions": output_parser.get_format_instructions()})
+        
+        logger.info("Result formatting completed successfully")
+        return {"result_obj": response}
+        
+    except Exception as e:
+        logger.error(f"Error in result formatting: {str(e)}")
+        raise
 
 
 
@@ -125,13 +142,20 @@ agent = workflow.compile()
 
 
 if __name__ == '__main__':
-    inputs = {
-        "actual_metric": "85 %",
-        "target_metric": "83 %",
-        "condition": ">= greater than or equals to",
-    }
-
-
-    result = agent.invoke(inputs)
-    print (result)
+    try:
+        logger.info("Starting metric analysis test")
+        inputs = {
+            "actual_metric": "85 %",
+            "target_metric": "83 %",
+            "condition": ">= greater than or equals to",
+        }
+        logger.info(f"Test inputs: {inputs}")
+        
+        result = agent.invoke(inputs)
+        logger.info("Test completed successfully")
+        print (result)
+        
+    except Exception as e:
+        logger.error(f"Error in test execution: {str(e)}")
+        raise
 

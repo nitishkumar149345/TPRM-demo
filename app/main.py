@@ -1,19 +1,17 @@
 import os
 import pathlib
 from io import BytesIO
-import httpx
 # from agents.analyze_agent import AnalyzeMetrics
 from agents.analyzer2 import agent
 from agents.extract_engine import ExtractionEngine
 import requests
-from typing import Literal
 # from agents.format_agent import MetricExtractor
 from agents.preprocess import PreprocessDocument
 from constants import keys
-from fastapi import FastAPI, Form, status, File, UploadFile
+from fastapi import FastAPI, Form, status, File, UploadFile, HTTPException
 # from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
 from fastapi.encoders import jsonable_encoder
 
 from logger_config.logs import logger
@@ -47,16 +45,14 @@ async def process_document(
     vendor_id: str = Form(...),
 ):
     file_name, object_key = utils.parse_s3_url(document_url)
-    print (object_key)
-
     local_file_path = os.path.join(upload_files_dir, file_name)
-    # print (document_url)
+
     local_contract_path = utils.download_file_content(
         bucket_name=keys.AWS_BUCKET_NAME,
         object_name=object_key,
         output_file_path=local_file_path,
     )
-    # print (vendor_id)
+
     processer = PreprocessDocument(
         document_path=local_contract_path,
         document_id=document_id,
@@ -64,10 +60,7 @@ async def process_document(
     )
     processer.process_document()
 
-    return Response(
-        content=f"document uploaded to vector db in collection:{vendor_id}", status_code=status.HTTP_201_CREATED
-    )
-
+    return JSONResponse(content= {"message": f"document uploaded to vector db in collection:{vendor_id}"}, status_code= status.HTTP_201_CREATED)
 
 
 @app.post("/extract_target_metrics")
@@ -81,31 +74,20 @@ async def extract_target_metrics(document_id: str = Form(...), vendor_id: str = 
 
     data = {"target_sla_metric": results_dict}
     
-    
     sub_url = keys.BASE_APPLICATION_URL + f'contracts/{document_id}'
 
 
     headers = {'Content-Type': 'application/json'}  # Important for JSON data
     response = requests.put(sub_url, json= data, headers=headers)
-    print (response)
+    # print (response)
     
     return Response(content= response.content, status_code= status.HTTP_200_OK)
 
-
-def is_schema_output(response):
-    return (
-        isinstance(response, dict)
-        and 'properties' in response
-        and '$defs' in response
-        and 'actual_metric' in response
-        and 'target_metric' in response
-    )
 
 
 
 @app.post("/process_actual_metrics")
 async def process_actual_metrics(file:UploadFile = File(...)):
-
 
     # file_object = file.filename
     data = await file.read()
@@ -137,22 +119,57 @@ async def process_actual_metrics(file:UploadFile = File(...)):
     # return payload
 
 
+def post_issue(
+        risk_comparision_id:str,
+        vendor_id: str,
+        results: dict,
+):
+    url = keys.BASE_APPLICATION_URL + 'issue'
+    for metric in results.keys():
+        result = results[metric]
+
+        if not result.get('is_compliant'):
+            data = {
+                "risk_comparision_id": risk_comparision_id,
+                "vendor_id": vendor_id,
+                "issue_name": metric,
+                "description": result.get('reason'),
+            }
+            print (f'metric failed:{metric} creating issue')
+            try:
+                response = requests.post(url, json= data, headers={'Content-Type': 'application/json'})
+                print (response.status_code, response.content)
+            except Exception as e:
+                print (e)
+
+
+
 @app.post("/analyze_metric")
 async def analyze_metrics(
-    target_metrics: dict,
-    actual_metrics: dict,
-    vendor: dict,
-    contract: dict,
-    contract_metric: dict,
+    # target_metrics: dict,
+    # actual_metrics: dict,
+    vendor_id: str = Form(...),
+    contract_id: str = Form(...),
+    actual_metric_id: str = Form(...),
 ):
-    
 
-    vendor_id = vendor['vendor_id']
-    contract_id = contract['contract_id']
-    actual_metric_id = contract_metric['actual_metric_id']
+
+
+    target_url = keys.BASE_APPLICATION_URL + f'contracts/{contract_id}'
+    target_metrics = requests.get(target_url).json()
+    target_metrics = target_metrics.get('target_sla_metric')
+
+    actual_url = keys.BASE_APPLICATION_URL + f'metrics/{actual_metric_id}'
+    actual_metrics = requests.get(actual_url).json()
+    actual_metrics = actual_metrics.get('actual_metric')
+
+    # base_fields =  ["contract_name","contract_type","vendor_name","customer_name","effective_date","expiration_date", "renewal_terms"]
 
     results = {}
-    for metric in target_metrics.keys():
+    for metric in actual_metrics.keys():
+        # if metric in base_fields:
+            # continue
+
         target_metric = target_metrics[metric]
         actual_metric = actual_metrics[metric]
 
@@ -181,11 +198,16 @@ async def analyze_metrics(
             print (f'Got invalid output, reinvoking metric:{metric}')
             result = agent.invoke(inputs)
 
+        if not result.get('is_compliant'):
+            # print (result)
+            print ('metric failed...')
+
         results[metric] = result['result_obj']
         results[metric]['actual_metric'] = actual_metric
         results[metric]['target_metric'] = target_metric['metric_value']
         results[metric]['condition'] = condition
 
+        
 
     # print (results)
     url = keys.BASE_APPLICATION_URL + 'risk/'
@@ -197,16 +219,24 @@ async def analyze_metrics(
         "contract_metric_id": actual_metric_id,
         "risk_comparison": results
     }
-
+    # print (data)
     try:
         response = requests.post(
             url,
             json= data,
             headers= {'Content-Type': 'application/json'}
         )
+        response_json = response.json()
+        risk_comparision_id = response_json.get('risk_comparison_id')
+        # print(response_json)
+        if not risk_comparision_id:
+            print ('no risk id')
+
+        post_issue(risk_comparision_id= risk_comparision_id, vendor_id= vendor_id, results= results)
+
     except Exception:
         raise Exception
-
+    
     return Response(content= response.content, status_code= status.HTTP_200_OK)
 
 

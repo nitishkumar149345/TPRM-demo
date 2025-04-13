@@ -42,7 +42,7 @@ def summarizer(state: AgentState):
     document_id = state["document_id"]
 
     field = state["field_name"]
-    print(field)
+    # print(field)
 
     vdb = MilvusVectorFactory().init_vdb(collection_name=collection_id)
 
@@ -94,7 +94,7 @@ def summarizer(state: AgentState):
 
     tools = [custom_retriever]
     agent = create_tool_calling_agent(llm_model, tools, prompt)
-    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=False)
 
     if state["field_type"] == "base":
         result = agent_executor.invoke(
