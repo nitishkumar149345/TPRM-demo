@@ -13,7 +13,7 @@ from fastapi import FastAPI, Form, status, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, JSONResponse
 from fastapi.encoders import jsonable_encoder
-
+import json
 from logger_config.logs import logger
 from utility import utils
 import pandas as pd
@@ -96,26 +96,32 @@ async def process_actual_metrics(file:UploadFile = File(...)):
 
     vendor_id = dataframe.iloc[1,1]
     contract_id = dataframe.iloc[2,1]
+    start_date = dataframe.iloc[3,1]
+    end_date = dataframe.iloc[4,1]
+
     dataframe.fillna(0, inplace=True)
 
     actual_metric_data = {
         row[0]: {"value": row[1], "data_type": row[2]} 
-        for index, row in dataframe.iterrows() if index >=6 
+        for index, row in dataframe.iterrows() if index >=8 
     }
 
     payload = {
         "vendor_id": vendor_id,
         "contract_id": contract_id,
         "frequency": 'monthly',
-        "actual_metric": actual_metric_data
+        "actual_metric": actual_metric_data,
     }
     
 
     sub_url = keys.BASE_APPLICATION_URL + '/metrics/'
     headers = {'Content-Type': 'application/json'}  
     response = requests.post(sub_url, json= payload, headers=headers)
+    response_data = response.json()
+    response_data['start_date'] = str(start_date)
+    response_data['end_date'] = str(end_date)
 
-    return Response(content= response.content, status_code= status.HTTP_200_OK) 
+    return Response(content= json.dumps(response_data), media_type="application/json", status_code= status.HTTP_200_OK) 
     # return payload
 
 
@@ -138,7 +144,7 @@ def post_issue(
             print (f'metric failed:{metric} creating issue')
             try:
                 response = requests.post(url, json= data, headers={'Content-Type': 'application/json'})
-                print (response.status_code, response.content)
+                print (response.status_code)
             except Exception as e:
                 print (e)
 
@@ -151,6 +157,8 @@ async def analyze_metrics(
     vendor_id: str = Form(...),
     contract_id: str = Form(...),
     actual_metric_id: str = Form(...),
+    start_date: str = Form(...),
+    end_date: str = Form(...)
 ):
 
 
@@ -217,7 +225,9 @@ async def analyze_metrics(
         "vendor_id": vendor_id,
         "contract_id": contract_id,
         "contract_metric_id": actual_metric_id,
-        "risk_comparison": results
+        "risk_comparison": results,
+        "start_date": start_date,
+        "end_date": end_date
     }
     # print (data)
     try:
