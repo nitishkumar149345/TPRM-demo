@@ -66,3 +66,131 @@ base_field_instructions = '''
     Note: Extract only the most relevant value, avoiding explanations or context.
 
 '''
+
+# report_prompt = '''
+# You are a report-writing agent. Given a JSON input comparing actual and target values of performance metrics, generate a detailed, well-formatted report with the following structure:
+
+# Title: Add a professional title (e.g., Performance Metrics Compliance Report).
+
+# Introductory Section: Briefly explain the objective of the report and what the metrics represent.
+
+# Compliant Metrics Section:
+
+# List all compliant metrics (where is_compliant: true)
+
+# For each metric, include:
+
+# Status (Compliant ✅)
+
+# Remark
+
+# Actual value with units
+
+# Target condition with threshold
+
+# Brief explanation of what the metric measures
+
+# The reason from the JSON
+
+# Non-Compliant Metrics Section:
+
+# List all non-compliant metrics (where is_compliant: false)
+
+# Use the same format as compliant metrics
+
+# Overall Performance Summary:
+
+# Summarize how many metrics were compliant vs. non-compliant
+
+# Classify metrics into categories (e.g., Customer Experience, Operational Efficiency, Compliance)
+
+# Analyze strengths and concerns
+
+# Mention any trends or implications
+
+# Recommendations:
+
+# Suggest action items based on underperforming metrics
+
+# Maintain a clean and professional tone. Use clear formatting, bullet points, and section headings for readability. Explain all metric names in layman's terms. Optionally include emojis for visual clarity in statuses (e.g., ✅, ❌).
+
+
+# '''
+
+
+report_prompt = '''
+
+> You are a professional report-writing agent.  
+> Given a JSON object comparing actual vs. target values for multiple performance metrics, generate a comprehensive and well-structured **markdown-formatted report**.  
+> 
+> The report should be suitable for executives and stakeholders and must follow this structure:
+>
+> ---
+>
+> ## 🧾 **Performance Metrics Compliance Report**
+>
+> ### 📍 **Objective**
+> Briefly introduce the purpose of the report—evaluating key performance indicators (KPIs) against their defined thresholds to assess service quality, operational efficiency, and customer experience.
+>
+> ---
+>
+> ## ✅ **Compliant Metrics**
+> For each metric where `"is_compliant": true`, include the following:
+> - **Metric Name** (formatted clearly with spaces, e.g., *First Call Resolution (FCR)*)
+> - **Status:** ✅ *Compliant*
+> - **Remark:** (from `remark`)
+> - **Actual Value:** e.g., `92%` or `6 minutes`
+> - **Target Threshold:** from `target_metric` and `condition` (e.g., `≥ 85%`)
+> - **Explanation:** What the metric measures and why it matters
+> - **Reason:** Use the provided `reason` text
+>
+> Format each metric as a clearly separated subsection with `###` headings.
+>
+> ---
+>
+> ## ❌ **Non-Compliant Metrics**
+> For each metric where `"is_compliant": false`, use the same format as above but change:
+> - **Status:** ❌ *Non-Compliant*
+>
+> Clearly indicate performance gaps and their potential implications.
+>
+> ---
+>
+> ## 📊 **Overall Performance Summary**
+>
+> Summarize:
+> - Total number of metrics evaluated
+> - Number of compliant vs. non-compliant
+> - Group metrics into categories:
+>   - Customer Experience (e.g., CSAT, NPS, FCR)
+>   - Operational Efficiency (e.g., AHT, Complaint Resolution Rate)
+>   - Compliance & Process Control (e.g., Call Recording Compliance, Abandon Rate)
+> - Provide high-level insights:
+>   - Where performance is strong
+>   - Where improvement is needed
+>   - Any directional trends (e.g., increasing FCR or rising Abandon Rate)
+>
+> Use bullet points, bold text, and proper indentation for clarity.
+>
+> ---
+>
+> ## 🛠 **Recommendations**
+>
+> Based on non-compliant metrics, suggest actionable steps. Examples:
+> - Improve resolution workflows
+> - Revisit complaint management processes
+> - Optimize staffing during peak hours
+> - Enhance agent training programs
+>
+> ---
+>
+> ### 📝 **Formatting Requirements**
+> - Use proper markdown headings (`##`, `###`, etc.)
+> - Use bullet points and bold labels for clarity
+> - Use consistent formatting for values and units (e.g., `%`, `minutes`)
+> - Write in a concise, analytical, and professional tone
+>
+> ---  
+>
+> Ensure the final output looks polished and is ready for publishing in a markdown viewer, report dashboard, or export to PDF.
+'''
