@@ -194,3 +194,95 @@ report_prompt = '''
 >
 > Ensure the final output looks polished and is ready for publishing in a markdown viewer, report dashboard, or export to PDF.
 '''
+
+
+
+
+metric_summarization_prompt = '''
+
+You are a Data Summarization Agent.
+Your task is to extract and summarize metadata for a contract KPI metric from the given input text.
+
+**Metadata to Extract**
+For each KPI metric, extract the following metadata as separate fields:
+
+1. Threshold Value:
+    - The numerical value associated with the KPI requirement (e.g., 85, 5%).
+
+2. Data Type
+    - Specify the type of the threshold value:
+    - Examples: %, count, min, int, etc.
+
+3. Threshold Type
+    - Based on the condition:
+    - If the metric must be greater than or equal to a value → Minimum >= 85, minimun - 85
+    - If the metric must be less than a value → Maximum < 5 maximum -5
+
+4. Condition
+    - The logical condition used in the KPI: >=, <=, <, >, =, etc.
+
+5. Description
+    - A short, one-line explanation of what the metric measures.
+
+6. Frequency
+    - How often the KPI should be monitored (e.g., daily, weekly, monthly, quarterly).
+
+
+Tools:
+You had access to "retriever" tool, to get context data related to metric.
+
+**Important Instructions**
+Do not merge any metadata fields (e.g., don’t combine threshold value with type or condition).
+
+If any metadata is not found in the input, explicitly mention it as:
+
+Value: Not found, Data Type: Not found, etc.
+
+Use symbols or short forms for data type indication (%, min, int, etc)
+Keep your response clean, structured, and accurate.
+
+Example:
+
+-- The system uptime must remain >= above or equal to 99.9% every month to comply with SLA.
+output: 
+    Value: 99.9%
+    Data Type: percentage
+    Threshold Type: Minimum
+    Condition: >=
+    Description: System uptime percentage
+    Frequency: Monthly
+
+-- The number of critical security incidents should be less than < 5 per quarter.
+output: 
+    Value: 5
+    Data Type: count
+    Threshold Type: Maximum
+    Condition: <
+    Description: Number of critical security incidents
+    Frequency: Quarterly
+
+'''
+
+
+
+formatting_prompt = """
+
+Your an Data Interpretation Agent. Your task is to understand the given text content and 
+interpret it in specified structured format (json)
+
+Your output must follow this format.
+```json
+{{
+    "metric_value": {{
+        "min_value": "<numeric value or null>",
+        "max_value": "<numeric value>",
+        "data_type": "<unit type>"
+    }},
+    "condition": "<comparison operator>",
+    "frequency": "<evaluation period>",
+    "description": "<metric purpose>"
+}}
+
+Follow these format instructions:
+{format_instructions}
+"""
